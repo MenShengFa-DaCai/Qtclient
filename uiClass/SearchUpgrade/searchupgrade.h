@@ -47,6 +47,9 @@ private slots:  // 私有槽函数，用于响应各种事件
     // TCP连接建立成功的槽函数
     void tcpConnected();
 
+    // 处理TCP断开连接
+    void tcpDisconnected();
+
     // TCP数据可读的槽函数
     void tcpReadyRead();
 

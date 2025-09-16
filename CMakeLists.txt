@@ -18,7 +18,10 @@ find_package(Qt6 COMPONENTS
 add_executable(Qtclient main.cpp
         uiClass/SearchUpgrade/searchupgrade.cpp
         uiClass/SearchUpgrade/searchupgrade.h
-        uiClass/SearchUpgrade/searchupgrade.ui)
+        uiClass/SearchUpgrade/searchupgrade.ui
+        uiClass/LinkPush/linkpush.cpp
+        uiClass/LinkPush/linkpush.h
+        uiClass/LinkPush/linkpush.ui)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui
