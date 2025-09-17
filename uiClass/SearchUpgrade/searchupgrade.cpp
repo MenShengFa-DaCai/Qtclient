@@ -143,12 +143,12 @@ void SearchUpgrade::readPendingDatagrams() {
     }
 }
 
-// 连接到客户端函数
+// 连接到服务器函数
 void SearchUpgrade::connectToClient(const QString& ipAddress) {
     // 创建新的TCP套接字
     //这里注意内存泄露风险
-    //这里不绑定父对象，这些链接要传递到下一个窗口
-    auto* tcpSocket = new QTcpSocket();
+    //这些链接要传递到下一个窗口,下一个窗口只获得被双击选中的套接字
+    auto* tcpSocket = new QTcpSocket(this);
     // 将TCP套接字和IP地址添加到映射表，主题初始为空字符串
     tcpSockets.insert(tcpSocket, QPair<QString, QString>(ipAddress, ""));
 
@@ -266,16 +266,36 @@ void SearchUpgrade::onClientDoubleClicked(QListWidgetItem* item) {
     QStringList parts = clientInfo.split(" ");
     // 检查是否有足够的部分(至少3部分: IP, 主题, 版本号)
     if (parts.size() >= 3) {
-        QString ip = parts[0]; // 第一部分是IP地址
-        QString topic = parts[1]; // 第二部分是主题
-        QString version = parts[2]; // 第三部分是版本号
+        const QString& ip = parts[0]; // 第一部分是IP地址
+        const QString& topic = parts[1]; // 第二部分是主题
+        const QString& version = parts[2]; // 第三部分是版本号
 
+        QTcpSocket* targetSocket = nullptr;
+        for (auto it = tcpSockets.begin(); it != tcpSockets.end(); ++it) {
+            // it.key() 是套接字指针，it.value().first 是IP地址
+            if (it.value().first == ip) {
+                targetSocket = it.key();
+                break; // 找到匹配的套接字，退出循环
+            }
+        }
+
+        // 检查是否找到有效套接字
+        if (!targetSocket) {
+            QMessageBox::warning(this, "错误", "未找到该设备的连接");
+            return;
+        }
+
+        LinkPush linkPush(this);
+        linkPush.show();
+        linkPush.setLinkInfo(ip,targetSocket,topic,version);
+        //断开槽函数，防止读到下一个窗口的数据。
+        disconnect(targetSocket, &QTcpSocket::readyRead, this, &SearchUpgrade::tcpReadyRead);
         // 这里可以添加代码来打开连接和推送升级固件的窗口
         // 暂时注释掉的代码示例:
         // QMessageBox::information(this, "设备详情",
         //     QString("IP: %1\n主题: %2\n版本: %3").arg(ip).arg(topic).arg(version));
         // 暂时显示消息框提示功能待实现
-        QMessageBox::information(this, "功能待实现",
-                                 "双击设备功能待实现，这里将打开连接和推送升级固件的窗口");
+        // QMessageBox::information(this, "功能待实现",
+        //                          "双击设备功能待实现，这里将打开连接和推送升级固件的窗口");
     }
 }

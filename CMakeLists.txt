@@ -13,6 +13,7 @@ find_package(Qt6 COMPONENTS
         Gui
         Widgets
         Network
+        Mqtt
         REQUIRED)
 
 add_executable(Qtclient main.cpp
@@ -21,12 +22,16 @@ add_executable(Qtclient main.cpp
         uiClass/SearchUpgrade/searchupgrade.ui
         uiClass/LinkPush/linkpush.cpp
         uiClass/LinkPush/linkpush.h
-        uiClass/LinkPush/linkpush.ui)
+        uiClass/LinkPush/linkpush.ui
+        uiClass/Login/login.cpp
+        uiClass/Login/login.h
+        uiClass/Login/login.ui)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Network
+        Qt::Mqtt
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -50,7 +55,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif ()
-    foreach (QT_LIB Core Gui Widgets)
+    foreach (QT_LIB Core Gui Widgets Network Mqtt)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"

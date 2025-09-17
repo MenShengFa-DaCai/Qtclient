@@ -1,22 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <author/>
-    <comment/>
-    <exportmacro/>
-    <class>LinkPush</class>
-    <widget class="QWidget" name="LinkPush">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>400</width>
-                <height>300</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>LinkPush</string>
-        </property>
+ <class>LinkPush</class>
+ <widget class="QWidget" name="LinkPush">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>链接和推送窗口</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>.</normaloff>.</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+    background-color: #2d3848;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #e0e0e0;
+    }
+
+    QLabel {
+    color: #e0e0e0;
+    font-size: 14px;
+    }
+
+    QProgressBar {
+    border: 1px solid #4a5668;
+    border-radius: 4px;
+    background-color: #3a4658;
+    text-align: center;
+    color: #e0e0e0;
+    }
+
+    QProgressBar::chunk {
+    background-color: #3498db;
+    border-radius: 3px;
+    }</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>15</number>
+   </property>
+   <property name="margin" stdset="0">
+    <number>20</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="label_info">
+     <property name="text">
+      <string>正在初始化链接信息...</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
-    <pixmapfunction/>
-    <connections/>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar_upgrade">
+     <property name="visible">
+      <bool>true</bool>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="textVisible">
+      <bool>true</bool>
+     </property>
+     <property name="format">
+      <string>升级进度: %p%</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location=""/>
+ </resources>
+ <connections/>
 </ui>
