@@ -1,9 +1,10 @@
-// login.cpp
 #include "login.h"
 #include "ui_Login.h"
 #include <QMessageBox>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <utility>
+#include "../MainWidget/mainwidget.h"
 
 /**
  * @brief 构造函数
@@ -11,8 +12,8 @@
  * @param ip MQTT代理服务器IP地址
  * @param topic MQTT主题前缀
  */
-Login::Login(QWidget* parent, const QString& ip, const QString& topic) :
-    QWidget(parent), ui(new Ui::Login), ip(ip), topic(topic), isConnected(false) {
+Login::Login(QWidget* parent, QString ip, QString topic) :
+    QWidget(parent), ui(new Ui::Login), ip(std::move(ip)), topic(std::move(topic)), isConnected(false) {
     ui->setupUi(this);
 
     // 设置窗口标题
@@ -183,7 +184,10 @@ void Login::handleLoginResponse(const QJsonObject& response) {
         // TODO: 登录成功后的逻辑
         // 1. 保存用户登录状态
         // 2. 跳转到主界面或执行其他操作
+        auto* mainWidget = new MainWidget();
+        mainWidget->show();
         // 3. 关闭登录窗口
+        close();
 
     } else if (status == "error") {
         QMessageBox::warning(this, "登录失败", message);

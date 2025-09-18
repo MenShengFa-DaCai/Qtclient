@@ -1,12 +1,22 @@
 #include "linkpush.h"
 #include "ui_LinkPush.h"
-#include "../Login/login.h"
 #include <QMessageBox>
-
+#include <QJsonObject>
+#include <QJsonDocument>
 
 LinkPush::LinkPush(QWidget* parent) :
-    QWidget(parent), ui(new Ui::LinkPush), m_tcpSocket(nullptr) {
+    QWidget(parent),
+    ui(new Ui::LinkPush),
+    m_tcpSocket(nullptr) {
     ui->setupUi(this);
+    m_tcpSocket = new QTcpSocket(this);
+
+    // 连接TCP信号槽
+    connect(m_tcpSocket, &QTcpSocket::connected, this, &LinkPush::onTcpConnected);
+    connect(m_tcpSocket, &QTcpSocket::readyRead, this, &LinkPush::onTcpReadyRead);
+    connect(m_tcpSocket, &QTcpSocket::disconnected, this, &LinkPush::onTcpDisconnected);
+    connect(m_tcpSocket, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
+            this, &LinkPush::onTcpErrorOccurred);
 }
 
 LinkPush::~LinkPush() {
@@ -17,71 +27,96 @@ LinkPush::~LinkPush() {
     delete ui;
 }
 
-void LinkPush::setLinkInfo(const QString& ip, QTcpSocket* socket, const QString& topic,const QString& version) {
+void LinkPush::connectToDevice(const QString& ip, const QString& topic) {
     m_ipAddress = ip;
-    m_tcpSocket = socket;
     m_topic = topic;
 
-    // 显示基础信息
-    ui->label_info->setText(QString("设备IP: %1\n主题: %2\n\n正在发送最新版本信息...").arg(ip, topic));
+    ui->label_info->setText(QString("正在连接到设备 %1...").arg(ip));
 
-    // 绑定TCP接收信号
-    connect(m_tcpSocket, &QTcpSocket::readyRead, this, &LinkPush::onTcpReadyRead);
+    // 连接到设备
+    m_tcpSocket->connectToHost(ip, 8888);
+}
 
-    // 发送版本号（实际项目中版本号建议从配置/全局变量获取）
-    if (m_tcpSocket->state() == QTcpSocket::ConnectedState) {
-        m_tcpSocket->write(version.toUtf8());
-        ui->label_info->setText("已发送版本号，等待设备回复...");
-    }
-    else {
-        QMessageBox::critical(this, "错误", "TCP连接未建立，无法通信！");
-    }
+void LinkPush::onTcpConnected() {
+    ui->label_info->setText(QString("已连接到设备 %1").arg(m_ipAddress));
+
+    // 发送版本信息
+    QJsonObject versionInfo;
+    versionInfo["type"] = 1;
+
+    QJsonObject dataObj;
+    dataObj["ver"] = "v1.0.1";
+    dataObj["file_name"] = "update.zip";
+    dataObj["file_len"] = 560000;
+    dataObj["md5"] = "AABBCCDDEEFF";
+
+    versionInfo["data"] = dataObj;
+
+    QJsonDocument doc(versionInfo);
+    m_tcpSocket->write(doc.toJson(QJsonDocument::Compact));
+
+    ui->label_info->setText("已发送升级问询信息，等待设备回复...");
+}
+
+void LinkPush::onTcpDisconnected() {
+    ui->label_info->setText(QString("与设备 %1 断开连接").arg(m_ipAddress));
+}
+
+void LinkPush::onTcpErrorOccurred(QAbstractSocket::SocketError error) {
+    Q_UNUSED(error)
+    ui->label_info->setText(QString("连接错误: %1").arg(m_tcpSocket->errorString()));
 }
 
 void LinkPush::onTcpReadyRead() {
     if (!m_tcpSocket) return;
 
-    QString response = m_tcpSocket->readAll().trimmed();
-    ui->label_info->setText(QString("\n设备回复: %1").arg(response));
+    QByteArray data = m_tcpSocket->readAll();
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
 
-    // 1. 设备同意升级（Y）：显示进度条+模拟升级+完成弹窗
-    if (response == "Y") {
-        ui->progressBar_upgrade->setVisible(true); // 显示进度条
-        ui->label_info->setText("设备同意升级，开始执行升级流程...");
-        QMessageBox::information(this, "升级结果", "升级完成！", QMessageBox::Ok);
-
-        // --------------------------
-        // 预留：升级完成后的后续逻辑
-        // TODO: 1. 记录设备升级成功日志（如写入本地文件/数据库）
-        // TODO: 2. 向服务器上报升级结果（若有服务端）
-        // TODO: 3. 重启设备（若需）或刷新设备状态
-        // TODO: 4. 关闭当前窗口或返回设备列表
-        // --------------------------
+    if (error.error != QJsonParseError::NoError || !doc.isObject()) {
+        ui->label_info->setText("收到无效的JSON数据");
+        return;
     }
-    // 2. 设备拒绝升级（N）：直接弹窗提示
-    else if (response == "N") {
-        // 无需升级弹窗
-        QMessageBox::information(this, "升级结果", "设备无需升级！", QMessageBox::Ok);
 
-        // --------------------------
-        // 预留：无需升级后的后续逻辑
-        // TODO: 1. 记录设备拒绝升级原因（若设备返回原因）
-        // TODO: 2. 维持TCP连接以进行其他操作（如推送配置）
-        // TODO: 3. 关闭窗口或返回设备列表
-        // --------------------------
-
-        // 3. 无效回复处理
+    QJsonObject jsonObj = doc.object();
+    if (!jsonObj.contains("type")) {
+        ui->label_info->setText("收到的数据包缺少type字段");
+        return;
     }
-    else {
-        QMessageBox::warning(this, "错误", "收到无效回复，请重试！", QMessageBox::Ok);
 
-        // --------------------------
-        // 预留：无效回复后的后续逻辑
-        // TODO: 1. 重新发送版本号（限3次，避免死循环）
-        // TODO: 2. 断开TCP连接并提示用户检查设备
-        // --------------------------
+    int type = jsonObj["type"].toInt();
+
+    switch (type) {
+    case 1: {
+        // 处理升级问询回复
+        if (jsonObj.contains("data") && jsonObj["data"].isObject()) {
+            QJsonObject dataObj = jsonObj["data"].toObject();
+            bool needUpdate = dataObj["update"].toBool();
+            if (needUpdate) {
+                ui->label_info->setText(QString("设备 %1 需要升级").arg(m_ipAddress));
+                // 这里可以添加升级逻辑
+            } else {
+                ui->label_info->setText(QString("设备 %1 已是最新版本").arg(m_ipAddress));
+            }
+        }
+        break;
     }
-    //打开登陆界面，关闭前面的界面，将网关IP地址存下，放在下面的登陆界面对象里
-    Login login(nullptr,m_ipAddress,m_topic);
-    login.show();
+    case 3: {
+        // 处理升级结果回复
+        if (jsonObj.contains("data") && jsonObj["data"].isObject()) {
+            QJsonObject dataObj = jsonObj["data"].toObject();
+            bool updateSuccess = dataObj["update_success"].toBool();
+            if (updateSuccess) {
+                ui->label_info->setText(QString("设备 %1 升级成功").arg(m_ipAddress));
+            } else {
+                ui->label_info->setText(QString("设备 %1 升级失败").arg(m_ipAddress));
+            }
+        }
+        break;
+    }
+    default:
+        ui->label_info->setText(QString("收到未知类型的数据包: %1").arg(type));
+        break;
+    }
 }

@@ -1,4 +1,3 @@
-// login.h
 #ifndef QTCLIENT_LOGIN_H
 #define QTCLIENT_LOGIN_H
 
@@ -32,7 +31,7 @@ public:
      * @param ip MQTT代理服务器IP地址
      * @param topic MQTT主题前缀
      */
-    explicit Login(QWidget* parent = nullptr, const QString& ip = "0.0.0.0", const QString& topic = "0");
+    explicit Login(QWidget* parent = nullptr, QString ip = "0.0.0.0", QString topic = "0");
 
     /**
      * @brief 析构函数
@@ -62,7 +61,7 @@ private:
     Ui::Login* ui;          // UI界面对象指针
     QString ip;             // MQTT代理服务器IP地址
     QString topic;          // MQTT主题前缀
-    QMqttClient* mqttClient; // MQTT客户端对象
+    QMqttClient* mqttClient=nullptr; // MQTT客户端对象
     bool isConnected;       // MQTT连接状态标志
 
     /**

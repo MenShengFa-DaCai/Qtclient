@@ -1,98 +1,115 @@
 #include "searchupgrade.h"
 #include "ui_searchupgrade.h"
-#include <QNetworkInterface>         // 用于获取网络接口信息
-#include <QMessageBox>               // 用于显示消息框
-#include <QTimer>                    // 用于定时器功能
+#include <QNetworkInterface>  // 包含网络接口相关类，用于获取网络信息
+#include <QMessageBox>  // 包含消息框类，用于显示提示/错误信息
+#include <QTimer>
+#include <QJsonDocument>  // 包含JSON文档类，用于JSON数据的序列化/反序列化
+#include <QJsonObject>  // 包含JSON对象类，用于处理JSON键值对
 #include "../LinkPush/linkpush.h"
 
-// 构造函数
+/**
+ * @brief SearchUpgrade类的构造函数
+ * @param parent 父窗口指针
+ * @details 初始化UI、设置窗口标题、创建UDP套接字、绑定信号槽、启动广播定时器
+ */
 SearchUpgrade::SearchUpgrade(QWidget* parent) :
-    // 调用基类构造函数
     QWidget(parent),
-    // 初始化UI对象
     ui(new Ui::SearchUpgrade),
-    // 初始化最新固件版本号为v1.0
-    latestFirmwareVersion("v1.0") {
-    // 设置UI界面
+    latestFirmwareVersion("v1.0") {  // 初始化最新固件版本为v1.0
     ui->setupUi(this);
+    setWindowTitle("搜索网关");  // 设置窗口标题
 
-    // 设置窗口属性
-    setWindowTitle("固件升级搜索"); // 设置窗口标题
+    udpSocket = new QUdpSocket(this);  // 实例化UDP套接字，父对象为当前窗口（自动管理生命周期）
 
-    // 初始化UDP socket
-    udpSocket = new QUdpSocket(this); // 创建UDP套接字对象，并设置父对象为当前窗口
-    // 尝试绑定到任意IPv4地址和随机端口
+    /**
+     * @brief QUdpSocket::bind()函数
+     * @param address 绑定的地址（任意IPv4地址）
+     * @param port 绑定的端口（0表示随机分配）
+     * @return 绑定成功返回true，失败返回false
+     * @details 绑定UDP套接字到本地任意IPv4地址的随机端口，用于接收设备响应
+     */
+
     if (!udpSocket->bind(QHostAddress::AnyIPv4, 0)) {
-        // 如果绑定失败，显示警告消息框
+        /**
+         * @brief QMessageBox::warning()函数
+         * @param parent 父窗口指针
+         * @param title 消息框标题
+         * @param text 消息内容
+         * @details 当UDP端口绑定失败时，显示警告消息框
+         */
         QMessageBox::warning(this, "错误", "无法绑定UDP端口");
     }
 
-    // 连接信号和槽函数
-    // 当UDP套接字有数据可读时，调用readPendingDatagrams函数
+    /**
+     * @brief QObject::connect()函数（绑定udpSocket的readyRead信号）
+     * @param sender 信号发送者（udpSocket）
+     * @param signal 发送的信号（QUdpSocket::readyRead）
+     * @param receiver 信号接收者（this）
+     * @param method 接收的槽函数（&SearchUpgrade::readPendingDatagrams）
+     * @details 当UDP套接字有可读数据时，触发readPendingDatagrams槽函数
+     */
     connect(udpSocket, &QUdpSocket::readyRead, this, &SearchUpgrade::readPendingDatagrams);
-    // 当关闭按钮被点击时，调用onCloseClicked函数
     connect(ui->pushButtonClose, &QPushButton::clicked, this, &SearchUpgrade::onCloseClicked);
-    // 当列表控件中的项被双击时，调用onClientDoubleClicked函数
     connect(ui->listWidgetClients, &QListWidget::itemDoubleClicked, this, &SearchUpgrade::onClientDoubleClicked);
-    // 延迟1000毫秒发送广播，确保UI已完全加载
+    /**
+     * @brief QTimer::singleShot()函数
+     * @param msec 延迟时间（毫秒）
+     * @param receiver 接收者（this）
+     * @param member 要执行的槽函数（&SearchUpgrade::sendBroadcast）
+     * @details 延迟1000毫秒后，执行sendBroadcast函数发送搜索广播
+     */
     QTimer::singleShot(1000, this, &SearchUpgrade::sendBroadcast);
 }
 
-// 析构函数
+/**
+ * @brief SearchUpgrade类的析构函数
+ * @details 释放UI对象资源
+ */
 SearchUpgrade::~SearchUpgrade() {
-    // 断开所有TCP连接
-    // 遍历tcpSockets映射表，断开每个TCP连接
-    for (auto it = tcpSockets.begin(); it != tcpSockets.end(); ++it) {
-        it.key()->disconnectFromHost(); // 断开TCP连接
-        it.key()->deleteLater(); // 延迟删除TCP套接字对象
-    }
-    delete ui; // 删除UI对象，释放内存
+    delete ui;  // 释放UI对象
 }
 
-// 发送UDP广播函数
+/**
+ * @brief 发送UDP广播搜索设备
+ * @details 构建JSON格式的搜索请求，遍历所有活动网络接口的IPv4广播地址并发送
+ */
 void SearchUpgrade::sendBroadcast() {
-    ui->labelStatus->setText("正在发送广播搜索设备..."); // 更新状态标签文本
+    ui->labelStatus->setText("正在发送广播搜索设备...");  // 更新状态标签显示
 
-    QByteArray datagram = "SearchUpgrade"; // 创建要发送的数据报内容
-    bool broadcastSent = false; // 标记是否成功发送广播
-    /*
-     *获取所有网络接口
-     *Qt 提供的静态函数，用于获取当前设备上所有的网络接口（如以太网、Wi-Fi、虚拟机网卡等），
-     *返回值是QList<QNetworkInterface>类型的列表。
-     */
-    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    /*遍历所有网络接口
-     *QNetworkInterface::flags()：返回网络接口的状态标志（QFlags<QNetworkInterface::InterfaceFlag>类型），
-     *用于描述接口的当前状态。
-     *testFlag(flag)：检查标志中是否包含某个特定状态（如IsUp、IsRunning等）。
-     *QNetworkInterface::IsUp：接口已启用（未被禁用）。
-     *QNetworkInterface::IsRunning：接口正在运行（可以传输数据）。
-     *QNetworkInterface::IsLoopBack：回环接口（如127.0.0.1，仅用于本地通信，无需发送广播）。
-     *筛选逻辑：只处理 “已启用、正在运行且非回环” 的接口，确保广播能通过有效网络发送到外部设备。
-     */
+    QJsonObject jsonObj;  // 创建JSON对象存储请求信息
+    jsonObj["type"] = 0;  // 设置消息类型为0（搜索请求）
+    jsonObj["request"] = "connect_info";  // 设置请求内容为获取连接信息
+
+    QJsonDocument jsonDoc(jsonObj);  // 将JSON对象转换为JSON文档
+    QByteArray datagram = jsonDoc.toJson(QJsonDocument::Compact);  // 将JSON文档转换为紧凑格式的字节数组
+
+    bool broadcastSent = false;  // 标记是否成功发送广播
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();  // 获取所有网络接口
+
+    // 遍历网络接口
     for (const QNetworkInterface& interface : interfaces) {
+        // 筛选处于启动且运行中、非回环的接口
         if (interface.flags().testFlag(QNetworkInterface::IsUp) &&
             interface.flags().testFlag(QNetworkInterface::IsRunning) &&
             !interface.flags().testFlag(QNetworkInterface::IsLoopBack)) {
-            // 获取接口的所有IP地址条目
-            /*
-             *QNetworkInterface::addressEntries()：
-             *返回当前网络接口关联的所有 IP 地址条目（QNetworkAddressEntry类型），
-             *每个条目包含 IP 地址、子网掩码、广播地址等信息。
-             */
-            QList<QNetworkAddressEntry> entries = interface.addressEntries();
-            // 遍历所有IP地址条目
+
+            QList<QNetworkAddressEntry> entries = interface.addressEntries();  // 获取接口的地址条目
+            // 遍历地址条目
             for (const QNetworkAddressEntry& entry : entries) {
-                // 只处理IPv4地址
-                //QHostAddress::protocol()：返回 IP 地址的协议类型
+                // 筛选IPv4协议的地址
                 if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                    //QNetworkAddressEntry::broadcast()：返回该 IP 地址对应的广播地址
-                    QHostAddress broadcastAddress = entry.broadcast();
+                    QHostAddress broadcastAddress = entry.broadcast();  // 获取广播地址
                     if (!broadcastAddress.isNull()) {
-                        // 如果广播地址有效
-                        // 发送UDP数据报到广播地址和指定端口
+                        /**
+                         * @brief 首次调用QUdpSocket::writeDatagram()函数
+                         * @param data 要发送的数据（广播内容）
+                         * @param address 目标广播地址
+                         * @param port 目标端口（PORT=8888）
+                         * @return 发送的字节数，失败返回-1
+                         * @details 向广播地址发送UDP数据报
+                         */
                         udpSocket->writeDatagram(datagram, broadcastAddress, PORT);
-                        broadcastSent = true; // 标记已发送广播
+                        broadcastSent = true;  // 标记广播发送成功
                     }
                 }
             }
@@ -108,194 +125,92 @@ void SearchUpgrade::sendBroadcast() {
     }
 }
 
-// 读取UDP待处理数据报函数
+/**
+ * @brief 读取等待的UDP数据报并解析
+ * @details 循环读取所有待处理的数据报，解析JSON格式的设备响应，提取设备信息并添加到列表
+ */
 void SearchUpgrade::readPendingDatagrams() {
-    //hasPendingDatagrams()判断 UDP 套接字中是否有未处理的数据报（返回true表示有数据可读取）。
+    // 循环读取所有待处理的数据报
     while (udpSocket->hasPendingDatagrams()) {
-        QByteArray datagram; // 存储接收到的数据
-        // 调整数据报大小为待处理数据报的大小
-        //pendingDatagramSize()：返回下一个待处理数据报的字节数（大小）。
-        /**
-         * QByteArray::resize(int size) 的核心作用是 将字节数组的长度调整为 size 字节。
-         * 如果新大小 size 大于当前数组长度：数组会被扩展，新增的字节会被初始化为 '\0'（空字节）。
-         * 如果新大小 size 小于当前数组长度：数组会被截断，超出部分的字节会被丢弃。
-         */
-        datagram.resize(udpSocket->pendingDatagramSize());
-        QHostAddress sender; // 存储发送方地址
-        quint16 senderPort; // 存储发送方端口
+        QByteArray datagram;  // 存储接收的数据
+        datagram.resize(udpSocket->pendingDatagramSize());  // 调整数据大小为待接收数据报的大小
+        QHostAddress sender;  // 存储发送者地址
+        quint16 senderPort;  // 存储发送者端口
 
-        // 读取数据报到datagram，并获取发送方地址和端口
-        /*readDatagram()函数 UDP 读取数据报的核心函数
-        * datagram.data()：接收数据的缓冲区指针（QByteArray的底层字节数据）。
-        * datagram.size()：缓冲区大小（即前面通过pendingDatagramSize()获取的大小）。
-        * &sender：输出参数，接收发送方的 IP 地址。
-        * &senderPort：输出参数，接收发送方的端口号。
+        /**
+         * @brief 首次调用QUdpSocket::readDatagram()函数
+         * @param data 接收数据的缓冲区
+         * @param maxSize 缓冲区最大大小
+         * @param sender 发送者地址输出参数
+         * @param senderPort 发送者端口输出参数
+         * @return 实际读取的字节数，失败返回-1
+         * @details 从UDP套接字读取数据报内容及发送者信息
          */
         udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-        // 检查数据报内容是否为"Client"且发送方使用IPv4协议
-        if (datagram == "Client" && sender.protocol() == QAbstractSocket::IPv4Protocol) {
-            // 更新状态标签显示发现的设备
-            ui->labelStatus->setText(QString("发现设备: %1").arg(sender.toString()));
-            // 连接到发现的客户端
-            connectToClient(sender.toString());
-        }
-    }
-}
-
-// 连接到服务器函数
-void SearchUpgrade::connectToClient(const QString& ipAddress) {
-    // 创建新的TCP套接字
-    //这里注意内存泄露风险
-    //这些链接要传递到下一个窗口,下一个窗口只获得被双击选中的套接字
-    auto* tcpSocket = new QTcpSocket(this);
-    // 将TCP套接字和IP地址添加到映射表，主题初始为空字符串
-    tcpSockets.insert(tcpSocket, QPair<QString, QString>(ipAddress, ""));
-
-    // 连接TCP套接字的信号到相应的槽函数
-    connect(tcpSocket, &QTcpSocket::connected, this, &SearchUpgrade::tcpConnected);
-    connect(tcpSocket, &QTcpSocket::readyRead, this, &SearchUpgrade::tcpReadyRead);
-    //链接异常槽函数
-    connect(tcpSocket, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
-            this, &SearchUpgrade::tcpErrorOccurred);
-    //断开连接槽函数
-    connect(tcpSocket,&QTcpSocket::disconnected,this,&SearchUpgrade::tcpDisconnected);
-    // 尝试连接到指定IP地址和端口的客户端
-    tcpSocket->connectToHost(ipAddress, PORT);
-}
-
-// TCP连接建立成功槽函数
-void SearchUpgrade::tcpConnected() {
-    // 获取发送信号的TCP套接字对象
-    auto* tcpSocket = qobject_cast<QTcpSocket*>(sender());
-    // 检查TCP套接字是否有效且在映射表中
-    if (tcpSocket && tcpSockets.contains(tcpSocket)) {
-        // 更新状态标签显示连接成功
-        ui->labelStatus->setText(QString("已连接到: %1").arg(tcpSockets.value(tcpSocket).first));
-    }
-}
-
-//主动断开连接的槽函数
-void SearchUpgrade::tcpDisconnected() {
-    //和读一样获取链接，sender返回触发槽函数的tcp套接字
-    auto* tcpSocket = qobject_cast<QTcpSocket*>(sender());
-    //获取到且在表中，contains检查映射表中是否包含指定键，返回布尔
-    if (tcpSocket && tcpSockets.contains(tcpSocket)) {
-        //arg(...)：QString 的字符串格式化函数
-        //value(key) 是映射容器的成员函数，用于根据指定的 key（键）获取对应的 value（值）。
-        //first是容器函数，获取第一个值
-        ui->labelStatus->setText(QString("与 %1 断开连接").arg(tcpSockets.value(tcpSocket).first));
-        //删除
-        tcpSockets.remove(tcpSocket);
+        QJsonParseError error;  // 存储JSON解析错误信息
         /**
-         * deleteLater();
-         * 不会立即销毁对象，而是向对象所属线程的事件队列中发送一个 “删除事件”，
-         * 当事件循环处理到该事件时，才会真正调用 delete 销毁对象。
+         * @brief 首次调用QJsonDocument::fromJson()函数
+         * @param json 待解析的JSON字节数组
+         * @param error 解析错误信息输出参数
+         * @return 解析后的QJsonDocument对象
+         * @details 将接收到的字节数组解析为JSON文档
          */
-        tcpSocket->deleteLater();
-    }
-}
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(datagram, &error);
 
-// TCP数据可读槽函数
-void SearchUpgrade::tcpReadyRead() {
-    // 获取发送信号的TCP套接字对象
-    auto* tcpSocket = qobject_cast<QTcpSocket*>(sender());
-    // 检查TCP套接字是否有效且在映射表中，如果无效则返回
-    if (!tcpSocket || !tcpSockets.contains(tcpSocket)) return;
+        // 检查解析是否成功且为JSON对象
+        if (error.error == QJsonParseError::NoError && jsonDoc.isObject()) {
+            QJsonObject jsonObj = jsonDoc.object();  // 获取JSON对象
 
-    // 获取客户端信息引用
-    QPair<QString, QString>& clientInfo = tcpSockets[tcpSocket];
-    // 读取所有可用数据并转换为字符串，去除首尾空白字符
-    QString data = QString::fromUtf8(tcpSocket->readAll()).trimmed();
+            // 检查消息类型是否为0（设备响应）且发送者为IPv4
+            if (jsonObj.contains("type") && jsonObj["type"].toInt() == 0 &&
+                sender.protocol() == QAbstractSocket::IPv4Protocol) {
 
-    // 检查是否已收到主题信息
-    if (clientInfo.second.isEmpty()) {
-        // 第一次读取，应该是MQTT主题
-        clientInfo.second = data; // 保存主题信息
-        // 发送最新固件版本号给客户端
-        tcpSocket->write(latestFirmwareVersion.toUtf8());
-    }
-    else {
-        // 第二次读取，应该是客户端固件版本号
-        QString ip = clientInfo.first; // 获取IP地址
-        QString topic = clientInfo.second; // 获取主题
-        const QString& clientVersion = data; // 获取客户端版本号
+                // 检查是否包含data字段且为对象
+                if (jsonObj.contains("data") && jsonObj["data"].isObject()) {
+                    QJsonObject dataObj = jsonObj["data"].toObject();  // 获取data对象
+                    QString mqttTopic = dataObj["mqtt_topic_report"].toString();  // 提取MQTT主题
+                    QString ipAddress = sender.toString();  // 获取发送者IP地址
 
-        // 创建显示文本，格式为"IP地址 主题 客户端版本号"
-        QString displayText = QString("%1 %2 %3").arg(ip, topic, clientVersion);
-        // 将显示文本添加到列表控件
-        ui->listWidgetClients->addItem(displayText);
+                    ui->labelStatus->setText(QString("发现设备: %1").arg(ipAddress));  // 更新状态标签
 
-        // 更新状态标签显示获取到的设备信息
-        ui->labelStatus->setText(QString("获取到设备信息: %1").arg(displayText));
-
-        // 断开TCP连接
-        tcpSocket->disconnectFromHost();
-        // 从映射表中移除TCP套接字
-        tcpSockets.remove(tcpSocket);
-        // 延迟删除TCP套接字对象
-        tcpSocket->deleteLater();
-    }
-}
-
-// TCP错误发生槽函数
-void SearchUpgrade::tcpErrorOccurred(QAbstractSocket::SocketError error) {
-    // 获取发送信号的TCP套接字对象
-    auto* tcpSocket = qobject_cast<QTcpSocket*>(sender());
-    // 检查TCP套接字是否有效且在映射表中
-    if (tcpSocket && tcpSockets.contains(tcpSocket)) {
-        // 更新状态标签显示错误信息
-        ui->labelStatus->setText(QString("连接错误: %1:%2").arg(tcpSocket->errorString()).arg(error));
-        // 从映射表中移除TCP套接字
-        tcpSockets.remove(tcpSocket);
-        // 延迟删除TCP套接字对象
-        tcpSocket->deleteLater();
-    }
-}
-
-// 关闭按钮点击槽函数
-void SearchUpgrade::onCloseClicked() {
-    close(); // 关闭窗口
-}
-
-// 客户端列表项双击槽函数
-void SearchUpgrade::onClientDoubleClicked(QListWidgetItem* item) {
-    // 获取双击的项目文本
-    QString clientInfo = item->text();
-    // 按空格分割文本为部分
-    QStringList parts = clientInfo.split(" ");
-    // 检查是否有足够的部分(至少3部分: IP, 主题, 版本号)
-    if (parts.size() >= 3) {
-        const QString& ip = parts[0]; // 第一部分是IP地址
-        const QString& topic = parts[1]; // 第二部分是主题
-        const QString& version = parts[2]; // 第三部分是版本号
-
-        QTcpSocket* targetSocket = nullptr;
-        for (auto it = tcpSockets.begin(); it != tcpSockets.end(); ++it) {
-            // it.key() 是套接字指针，it.value().first 是IP地址
-            if (it.value().first == ip) {
-                targetSocket = it.key();
-                break; // 找到匹配的套接字，退出循环
+                    // 构建列表项显示文本（IP地址 + MQTT主题）
+                    QString displayText = QString("%1 %2").arg(ipAddress, mqttTopic);
+                    /**
+                     * @brief 首次调用QListWidget::addItem()函数
+                     * @param text 列表项显示文本
+                     * @details 向列表控件添加设备信息项
+                     */
+                    ui->listWidgetClients->addItem(displayText);
+                }
             }
         }
+    }
+}
 
-        // 检查是否找到有效套接字
-        if (!targetSocket) {
-            QMessageBox::warning(this, "错误", "未找到该设备的连接");
-            return;
-        }
+/**
+ * @brief 关闭按钮点击事件处理
+ * @details 关闭当前窗口
+ */
+void SearchUpgrade::onCloseClicked() {
+    close();  // 调用QWidget的close()方法关闭窗口
+}
 
-        LinkPush linkPush(this);
-        linkPush.show();
-        linkPush.setLinkInfo(ip,targetSocket,topic,version);
-        //断开槽函数，防止读到下一个窗口的数据。
-        disconnect(targetSocket, &QTcpSocket::readyRead, this, &SearchUpgrade::tcpReadyRead);
-        // 这里可以添加代码来打开连接和推送升级固件的窗口
-        // 暂时注释掉的代码示例:
-        // QMessageBox::information(this, "设备详情",
-        //     QString("IP: %1\n主题: %2\n版本: %3").arg(ip).arg(topic).arg(version));
-        // 暂时显示消息框提示功能待实现
-        // QMessageBox::information(this, "功能待实现",
-        //                          "双击设备功能待实现，这里将打开连接和推送升级固件的窗口");
+/**
+ * @brief 列表项双击事件处理
+ * @param item 被双击的列表项
+ * @details 解析列表项中的IP和MQTT主题，创建LinkPush窗口并连接设备
+ */
+void SearchUpgrade::onClientDoubleClicked(QListWidgetItem* item) {
+    QString clientInfo = item->text();  // 获取列表项文本
+    QStringList parts = clientInfo.split(" ");  // 按空格分割文本（IP和MQTT主题）
+    if (parts.size() >= 2) {  // 确保分割结果有效
+        const QString& ip = parts[0];  // 提取IP地址
+        const QString& topic = parts[1];  // 提取MQTT主题
+
+        auto *linkPush = new LinkPush(this);  // 实例化LinkPush对象（父对象为当前窗口）
+        linkPush->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);  // 设置窗口标志（对话框样式，显示标题）
+        linkPush->connectToDevice(ip, topic);  // 调用LinkPush的方法连接设备
+        linkPush->show();  // 显示LinkPush窗口
     }
 }

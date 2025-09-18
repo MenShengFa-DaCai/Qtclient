@@ -25,7 +25,10 @@ add_executable(Qtclient main.cpp
         uiClass/LinkPush/linkpush.ui
         uiClass/Login/login.cpp
         uiClass/Login/login.h
-        uiClass/Login/login.ui)
+        uiClass/Login/login.ui
+        uiClass/MainWidget/mainwidget.cpp
+        uiClass/MainWidget/mainwidget.h
+        uiClass/MainWidget/mainwidget.ui)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui

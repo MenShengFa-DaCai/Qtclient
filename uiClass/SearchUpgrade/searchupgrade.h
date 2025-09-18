@@ -1,84 +1,69 @@
 // searchupgrade.h
-#ifndef QTCLIENT_SEARCHUPGRADE_H  // 防止头文件被重复包含的预处理器指令
+#ifndef QTCLIENT_SEARCHUPGRADE_H  // 防止头文件重复包含的宏定义
 #define QTCLIENT_SEARCHUPGRADE_H
 
-#define PORT 8888  // 定义通信端口号为8888
+#define PORT 8888
 
-#include <QWidget>          // 包含QWidget类，用于创建GUI窗口
-#include <QUdpSocket>       // 包含QUdpSocket类，用于UDP通信
-#include <QTcpSocket>       // 包含QTcpSocket类，用于TCP通信
-#include <QListWidgetItem>  // 包含QListWidgetItem类，用于列表项操作
+#include <QWidget>
+#include <QUdpSocket>
+#include <QListWidgetItem>  // 包含QListWidgetItem类，用于列表控件的项操作
 
-QT_BEGIN_NAMESPACE  // 开始Qt命名空间
-
-// 前置声明Ui命名空间中的SearchUpgrade类
-// 这个类是由Qt Designer自动生成的，对应UI文件中的界面元素
+QT_BEGIN_NAMESPACE
 namespace Ui {
     class SearchUpgrade;
 }
+QT_END_NAMESPACE
 
-QT_END_NAMESPACE  // 结束Qt命名空间
-
-// SearchUpgrade类定义，继承自QWidget
+/**
+ * @brief 固件升级搜索窗口类，用于通过UDP广播搜索设备并处理升级相关交互
+ * @details 继承自QWidget，实现了设备发现、列表展示及升级连接功能
+ */
 class SearchUpgrade : public QWidget {
-    Q_OBJECT  // Qt宏，启用信号槽机制和元对象系统
+    Q_OBJECT  // Qt元对象系统宏，启用信号与槽机制
 
 public:
-    // 构造函数
-    // parent参数指向父窗口部件，默认为nullptr表示没有父窗口
+    /**
+     * @brief 构造函数
+     * @param parent 父窗口指针，默认为nullptr
+     */
     explicit SearchUpgrade(QWidget* parent = nullptr);
 
-    // 析构函数，override关键字表示重写基类的虚函数
+    /**
+     * @brief 析构函数
+     * @details 负责释放UI对象等动态分配的资源
+     */
     ~SearchUpgrade() override;
 
-private slots:  // 私有槽函数，用于响应各种事件
-    // 关闭按钮点击事件的槽函数
+private slots:
+    /**
+     * @brief 关闭按钮点击事件处理槽函数
+     * @details 触发窗口关闭操作
+     */
     void onCloseClicked();
 
     /**
-    * @brief 客户端列表项双击事件的槽函数
-    * @param item 指向被双击的列表项
-    */
+     * @brief 列表项双击事件处理槽函数
+     * @param item 被双击的列表项指针
+     * @details 用于打开设备连接窗口，进行固件升级相关操作
+     */
     void onClientDoubleClicked(QListWidgetItem* item);
 
-    // 读取UDP待处理数据报的槽函数
+    /**
+     * @brief 读取等待的数据报槽函数
+     * @details 当UDP套接字接收到数据时触发，解析设备响应信息
+     */
     void readPendingDatagrams();
 
-    // TCP连接建立成功的槽函数
-    void tcpConnected();
-
-    // 处理TCP断开连接
-    void tcpDisconnected();
-
-    // TCP数据可读的槽函数
-    void tcpReadyRead();
+private:
+    Ui::SearchUpgrade* ui;  // UI界面对象指针，用于访问界面控件
+    QUdpSocket* udpSocket;  // UDP套接字指针，用于发送和接收广播数据
+    QString latestFirmwareVersion;  // 最新固件版本号
 
     /**
-     * @brief TCP错误发生的槽函数
-     * @param error 表示发生的具体错误类型
+     * @brief 发送UDP广播搜索设备
+     * @details 遍历网络接口，向所有IPv4广播地址发送搜索请求
      */
-    void tcpErrorOccurred(QAbstractSocket::SocketError error);
-
-private:
-    Ui::SearchUpgrade* ui;  // 指向UI界面对象的指针
-
-    // UDP套接字指针，用于发送广播和接收响应
-    QUdpSocket* udpSocket;
-
-    // TCP套接字映射表，用于管理多个TCP连接
-    // 键: QTcpSocket指针，值: QPair<IP地址, MQTT主题>
-    QMap<QTcpSocket*, QPair<QString, QString>> tcpSockets;
-
-    // 存储最新固件版本号的字符串
-    QString latestFirmwareVersion;
-
-    // 私有成员函数
-    // 发送UDP广播数据包
     void sendBroadcast();
-
-    // 连接到指定IP地址的客户端
-    // ipAddress参数表示客户端的IP地址
-    void connectToClient(const QString& ipAddress);
 };
 
-#endif //QTCLIENT_SEARCHUPGRADE_H  // 结束头文件保护条件
+#endif //QTCLIENT_SEARCHUPGRADE_H  // 头文件宏定义结束
