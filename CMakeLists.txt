@@ -28,7 +28,9 @@ add_executable(Qtclient main.cpp
         uiClass/Login/login.ui
         uiClass/MainWidget/mainwidget.cpp
         uiClass/MainWidget/mainwidget.h
-        uiClass/MainWidget/mainwidget.ui)
+        uiClass/MainWidget/mainwidget.ui
+        src/FileSenderThread.cpp
+        inc/FileSenderThread.h)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui
@@ -36,6 +38,8 @@ target_link_libraries(Qtclient
         Qt::Network
         Qt::Mqtt
 )
+
+include_directories(inc)
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)

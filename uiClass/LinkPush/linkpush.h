@@ -28,13 +28,19 @@ private slots:
     void onTcpConnected();
     void onTcpDisconnected();
     void onTcpErrorOccurred(QAbstractSocket::SocketError error);
+    // 处理文件发送结果的槽函数
+    void onFileSendSuccess();
+    void onFileSendError(const QString& errorMsg);
+    // 新增：处理文件发送进度更新
+    void onFileSendProgress(qint64 sent, qint64 total);
 
 private:
     Ui::LinkPush* ui;
     QString m_ipAddress;
     QTcpSocket* m_tcpSocket;
     QString m_topic;
-    QString m_version;
+    QByteArray m_jsonData=""; //版本文件内容
+    QWidget* parent=nullptr;
 };
 
 #endif

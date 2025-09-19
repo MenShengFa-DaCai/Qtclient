@@ -123,14 +123,14 @@ void Login::sendLoginInfo(const QString& username, const QString& password) {
     QByteArray payload = doc.toJson(QJsonDocument::Compact);
 
     // 发布到MQTT主题
-    QMqttTopicName publishTopic = QString("%1/login").arg(topic);
+    QMqttTopicName publishTopic = QString("down");
     if (mqttClient->publish(publishTopic, payload) == -1) {
         QMessageBox::warning(this, "发送错误", "无法发送登录信息");
         return;
     }
 
-    // 订阅响应主题 - 修复参数类型问题
-    QMqttTopicFilter responseTopic = QString("%1/login/response").arg(topic);  // 使用QMqttTopicFilter
+    // 订阅响应主题
+    QMqttTopicFilter responseTopic = topic;  // 使用QMqttTopicFilter
     auto subscription = mqttClient->subscribe(responseTopic);
     if (!subscription) {
         QMessageBox::warning(this, "订阅错误", "无法订阅响应主题");
@@ -180,21 +180,13 @@ void Login::handleLoginResponse(const QJsonObject& response) {
 
     if (status == "success") {
         QMessageBox::information(this, "登录成功", message);
-
-        // TODO: 登录成功后的逻辑
-        // 1. 保存用户登录状态
-        // 2. 跳转到主界面或执行其他操作
-        auto* mainWidget = new MainWidget();
+        // 跳转到主界面或执行其他操作
+        auto* mainWidget = new MainWidget(nullptr,ip,topic);
         mainWidget->show();
-        // 3. 关闭登录窗口
+        // 关闭登录窗口
         close();
-
     } else if (status == "error") {
         QMessageBox::warning(this, "登录失败", message);
-
-        // TODO: 登录失败后的逻辑
-        // 1. 清空密码输入框
-        // 2. 可选：记录登录失败次数
         ui->lineEditPassword->clear();
     } else {
         QMessageBox::warning(this, "响应错误", "未知的响应状态");
