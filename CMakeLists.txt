@@ -30,7 +30,16 @@ add_executable(Qtclient main.cpp
         uiClass/MainWidget/mainwidget.h
         uiClass/MainWidget/mainwidget.ui
         src/FileSenderThread.cpp
-        inc/FileSenderThread.h)
+        inc/FileSenderThread.h
+        uiClass/WaterHeater/waterheater.cpp
+        uiClass/WaterHeater/waterheater.h
+        uiClass/WaterHeater/waterheater.ui
+        uiClass/ThermoHygroHistory/thermohygrohistory.cpp
+        uiClass/ThermoHygroHistory/thermohygrohistory.h
+        uiClass/ThermoHygroHistory/thermohygrohistory.ui
+        uiClass/Infrared/infrared.cpp
+        uiClass/Infrared/infrared.h
+        uiClass/Infrared/infrared.ui)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui

@@ -18,7 +18,7 @@ Login::Login(QWidget* parent, QString ip, QString topic) :
 
     // 设置窗口标题
     setWindowTitle("用户登录");
-
+    setAttribute(Qt::WA_DeleteOnClose);
     // 初始化UI组件
     ui->lineEditUsername->setPlaceholderText("请输入用户名");
     ui->lineEditPassword->setPlaceholderText("请输入密码");
@@ -35,6 +35,14 @@ Login::Login(QWidget* parent, QString ip, QString topic) :
  * @brief 析构函数
  */
 Login::~Login() {
+    // 取消MQTT订阅
+    if (subscription&&mqttClient) {
+        mqttClient->unsubscribe(subscription->topic()); // 取消订阅
+        delete subscription; // 释放订阅对象
+        subscription = nullptr;
+    }
+    disconnect(mqttClient, &QMqttClient::stateChanged, this, &Login::onMqttStateChanged);
+    disconnect(mqttClient, &QMqttClient::messageReceived, this, &Login::onMqttMessageReceived);
     if (mqttClient) {
         mqttClient->disconnectFromHost();
         delete mqttClient;
@@ -123,7 +131,7 @@ void Login::sendLoginInfo(const QString& username, const QString& password) {
     QByteArray payload = doc.toJson(QJsonDocument::Compact);
 
     // 发布到MQTT主题
-    QMqttTopicName publishTopic = QString("down");
+    QMqttTopicName publishTopic = QString("up");
     if (mqttClient->publish(publishTopic, payload) == -1) {
         QMessageBox::warning(this, "发送错误", "无法发送登录信息");
         return;
@@ -131,7 +139,7 @@ void Login::sendLoginInfo(const QString& username, const QString& password) {
 
     // 订阅响应主题
     QMqttTopicFilter responseTopic = topic;  // 使用QMqttTopicFilter
-    auto subscription = mqttClient->subscribe(responseTopic);
+    subscription = mqttClient->subscribe(responseTopic);
     if (!subscription) {
         QMessageBox::warning(this, "订阅错误", "无法订阅响应主题");
         return;

@@ -1,299 +1,394 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>MainWidget</class>
-    <widget class="QMainWindow" name="MainWidget">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>900</width>
-                <height>700</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>智能家居控制中心</string>
-        </property>
-        <property name="styleSheet">
-            <string notr="true">QMainWindow {
-                background-color: #f0f0f0;
-                font-family: 'Arial', sans-serif;
-                }
-                QGroupBox {
-                font-weight: bold;
-                border: 2px solid #cccccc;
-                border-radius: 8px;
-                margin-top: 1ex;
-                padding-top: 10px;
-                background-color: white;
-                }
-                QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top center;
-                padding: 0 5px;
-                }
-                QPushButton {
-                background-color: #f8f9fa;
-                border: 1px solid #dadce0;
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-weight: bold;
-                color: #3c4043;
-                }
-                QPushButton:hover {
-                background-color: #e8f0fe;
-                border-color: #1a73e8;
-                }
-                QPushButton:pressed {
-                background-color: #d2e3fc;
-                }
-                QLabel {
-                color: #3c4043;
-                }
-                QSlider::groove:horizontal {
-                border: 1px solid #999999;
-                height: 8px;
-                background: #cccccc;
-                margin: 2px 0;
-                border-radius: 4px;
-                }
-                QSlider::handle:horizontal {
-                background: #1a73e8;
-                border: 1px solid #5c5c5c;
-                width: 18px;
-                margin: -5px 0;
-                border-radius: 9px;
-                }
-                QSlider::sub-page:horizontal {
-                background: #1a73e8;
-                border-radius: 4px;
-                }</string>
-        </property>
-        <widget class="QWidget" name="centralwidget">
-            <layout class="QGridLayout" name="gridLayout">
-                <item row="0" column="0">
-                    <widget class="QGroupBox" name="groupBoxLed">
-                        <property name="title">
-                            <string>LED灯</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout">
-                            <item>
-                                <widget class="QPushButton" name="btnLed">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="0" column="1">
-                    <widget class="QGroupBox" name="groupBoxBuzzer">
-                        <property name="title">
-                            <string>蜂鸣器</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_2">
-                            <item>
-                                <widget class="QPushButton" name="btnBuzzer">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="0" column="2">
-                    <widget class="QGroupBox" name="groupBoxFan">
-                        <property name="title">
-                            <string>风扇</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_3">
-                            <item>
-                                <widget class="QPushButton" name="btnFan">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="1" column="0">
-                    <widget class="QGroupBox" name="groupBoxDoorLock">
-                        <property name="title">
-                            <string>门锁</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_4">
-                            <item>
-                                <widget class="QPushButton" name="btnDoorLock">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="1" column="1">
-                    <widget class="QGroupBox" name="groupBoxTv">
-                        <property name="title">
-                            <string>电视</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_5">
-                            <item>
-                                <widget class="QPushButton" name="btnTv">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="1" column="2">
-                    <widget class="QGroupBox" name="groupBoxThermoHygro">
-                        <property name="title">
-                            <string>温湿度计</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_6">
-                            <item>
-                                <widget class="QLabel" name="lblTemperature">
-                                    <property name="text">
-                                        <string>温度: -- °C</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QLabel" name="lblHumidity">
-                                    <property name="text">
-                                        <string>湿度: -- %</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QPushButton" name="btnThermoHygro">
-                                    <property name="text">
-                                        <string>设置阈值</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="2" column="0">
-                    <widget class="QGroupBox" name="groupBoxInfrared">
-                        <property name="title">
-                            <string>人体红外</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_7">
-                            <item>
-                                <widget class="QLabel" name="lblInfrared">
-                                    <property name="text">
-                                        <string>未检测到</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QPushButton" name="btnInfrared">
-                                    <property name="text">
-                                        <string>查看详情</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="2" column="1">
-                    <widget class="QGroupBox" name="groupBoxWaterHeater">
-                        <property name="title">
-                            <string>热水器</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_8">
-                            <item>
-                                <widget class="QLabel" name="lblWaterHeater">
-                                    <property name="text">
-                                        <string>水温: -- °C</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QPushButton" name="btnWaterHeater">
-                                    <property name="text">
-                                        <string>设置温度</string>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item row="2" column="2">
-                    <widget class="QGroupBox" name="groupBoxAirConditioner">
-                        <property name="title">
-                            <string>空调</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_9">
-                            <item>
-                                <widget class="QPushButton" name="btnAirConditioner">
-                                    <property name="text">
-                                        <string>关</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QLabel" name="lblAirConditionerTemp">
-                                    <property name="text">
-                                        <string>温度: 25°C</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item>
-                                <widget class="QSlider" name="sliderAirConditionerTemp">
-                                    <property name="minimum">
-                                        <number>16</number>
-                                    </property>
-                                    <property name="maximum">
-                                        <number>35</number>
-                                    </property>
-                                    <property name="value">
-                                        <number>25</number>
-                                    </property>
-                                    <property name="orientation">
-                                        <enum>Qt::Horizontal</enum>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-            </layout>
+ <class>MainWidget</class>
+ <widget class="QMainWindow" name="MainWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>682</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>智能家居控制中心</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #2d3848;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #e0e0e0;
+    }
+    QGroupBox {
+    font-weight: bold;
+    font-size: 16px;
+    border: 2px solid #4a5668;
+    border-radius: 8px;
+    margin-top: 1ex;
+    padding-top: 10px;
+    background-color: #3a4658;
+    color: #e0e0e0;
+    }
+    QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 5px;
+    color: #e0e0e0;
+    }
+    QPushButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 16px;
+    }
+    QPushButton:hover {
+    background-color: #2980b9;
+    }
+    QPushButton:pressed {
+    background-color: #21618c;
+    }
+    QLabel {
+    color: #e0e0e0;
+    }
+    QSlider::groove:horizontal {
+    border: 1px solid #4a5668;
+    height: 8px;
+    background: #4a5668;
+    margin: 2px 0;
+    border-radius: 4px;
+    }
+    QSlider::handle:horizontal {
+    background: #3498db;
+    border: 1px solid #2c3e50;
+    width: 18px;
+    margin: -5px 0;
+    border-radius: 9px;
+    }
+    QSlider::sub-page:horizontal {
+    background: #3498db;
+    border-radius: 4px;
+    }</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="1,1,1" columnstretch="1,1,1" rowminimumheight="1,1,1" columnminimumwidth="1,1,1">
+    <property name="spacing">
+     <number>10</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBoxLed">
+      <property name="title">
+       <string>LED灯</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="btnLed">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
         </widget>
-        <widget class="QMenuBar" name="menubar">
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>900</width>
-                    <height>21</height>
-                </rect>
-            </property>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QGroupBox" name="groupBoxBuzzer">
+      <property name="title">
+       <string>蜂鸣器</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QPushButton" name="btnBuzzer">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
         </widget>
-        <widget class="QStatusBar" name="statusbar"/>
-    </widget>
-    <resources/>
-    <connections/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QGroupBox" name="groupBoxFan">
+      <property name="title">
+       <string>风扇</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPushButton" name="btnFan">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="groupBoxDoorLock">
+      <property name="title">
+       <string>门锁</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QPushButton" name="btnDoorLock">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="groupBoxTv">
+      <property name="title">
+       <string>电视</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QPushButton" name="btnTv">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QGroupBox" name="groupBoxThermoHygro">
+      <property name="title">
+       <string>温湿度计</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QLabel" name="lblTemperature">
+         <property name="text">
+          <string>温度: -- °C</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblHumidity">
+         <property name="text">
+          <string>湿度: -- %</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnThermoHygro">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>查看详情</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QGroupBox" name="groupBoxInfrared">
+      <property name="title">
+       <string>人体红外</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QLabel" name="lblInfrared">
+         <property name="text">
+          <string>未检测到</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnInfrared">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>查看详情</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QGroupBox" name="groupBoxWaterHeater">
+      <property name="title">
+       <string>热水器</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QLabel" name="lblWaterHeater">
+         <property name="text">
+          <string>水温: -- °C</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnWaterHeater">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>设置温度</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QGroupBox" name="groupBoxAirConditioner">
+      <property name="title">
+       <string>空调</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QPushButton" name="btnAirConditioner">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>关</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblAirConditionerTemp">
+         <property name="text">
+          <string>温度: 25°C</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="sliderAirConditionerTemp">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="minimum">
+          <number>16</number>
+         </property>
+         <property name="maximum">
+          <number>35</number>
+         </property>
+         <property name="value">
+          <number>25</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>900</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QMenuBar {
+     background-color: #3a4658;
+     color: #e0e0e0;
+     border-bottom: 1px solid #4a5668;
+     }
+     QMenuBar::item {
+     background-color: transparent;
+     padding: 5px 10px;
+     }
+     QMenuBar::item:selected {
+     background-color: #3498db;
+     }</string>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="styleSheet">
+    <string notr="true">QStatusBar {
+     background-color: #3a4658;
+     color: #e0e0e0;
+     border-top: 1px solid #4a5668;
+     }</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

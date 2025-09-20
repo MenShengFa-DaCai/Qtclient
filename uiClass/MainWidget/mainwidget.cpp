@@ -95,37 +95,43 @@ void MainWidget::onMqttMessageReceived(const QByteArray &message, const QMqttTop
 
         // 根据点表映射key与设备/传感器
         switch (key) {
-            // m0模块 - 温度（key=1）
-            case 1:
-                temperature = valStr.toDouble();
-                break;
-            // m0模块 - 湿度（key=2）
-            case 2:
-                humidity = valStr.toDouble();
-                break;
             // stm32模块 - 灯（key=301，type=1："1"=开，"0"=关）
             case 301:
-                ledState = (valStr == "1");
+                ledState = (valStr == "true");
                 break;
             // stm32模块 - 蜂鸣器（key=302，type=1）
             case 302:
-                buzzerState = (valStr == "1");
+                buzzerState = (valStr == "true");
                 break;
             // stm32模块 - 风扇（key=303，type=1）
             case 303:
-                fanState = (valStr == "1");
+                fanState = (valStr == "true");
                 break;
+            // stm32模块 - 湿度（key=304）
+            case 304:
+                humidity = valStr.toDouble();
+                break;
+
+            //305和306是湿度上下限阈值，无需采集
+
+            // stm32模块 - 温度（key=1）
+            case 307:
+                temperature = valStr.toDouble();
+                break;
+
+            //308和309是温度上下限阈值无需采集
+
             // stm32模块 - 人体红外（key=310，type=1）
             case 310:
-                infraredState = (valStr == "1");
+                infraredState = (valStr == "true");
                 break;
             // stm32模块 - 门锁（key=311，type=1）
             case 311:
-                doorLockState = (valStr == "1");
+                doorLockState = (valStr == "true");
                 break;
             // modbus模块 - 电视（key=101，type=1）
             case 101:
-                tvState = (valStr == "1");
+                tvState = (valStr == "true");
                 break;
             // modbus模块 - 热水器温度（key=103，type=3）
             case 103:
@@ -133,7 +139,7 @@ void MainWidget::onMqttMessageReceived(const QByteArray &message, const QMqttTop
                 break;
             // modbus模块 - 空调开关（key=104，type=1）
             case 104:
-                airConditionerState = (valStr == "1");
+                airConditionerState = (valStr == "true");
                 break;
             // modbus模块 - 空调温度（key=105，type=3）
             case 105:
@@ -215,16 +221,36 @@ void MainWidget::publishDeviceState(const QString& device, bool state) {
         return;  // 未连接则不发送
     }
 
-    // 构造JSON消息体
-    QJsonObject json;
-    json["device"] = device;                  // 设备名称
-    json["state"] = state;                    // 设备状态（true/false）
-    json["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);  // 时间戳
+    // 仅保留需要控制的五个外设映射（根据点表）
+    QMap<QString, int> deviceKeyMap = {
+        {"led", 301},                  // LED灯（stm32的light）
+        {"buzzer", 302},               // 蜂鸣器（stm32的fengmingqi）
+        {"fan", 303},                  // 风扇（stm32的fan）
+        {"door_lock", 311},            // 门锁（stm32的lock）
+        {"air_conditioner", 104},       // 空调（modbus的air-switch）
+        {"tv",101}                      //电视
+    };
 
-    QJsonDocument doc(json);  // 序列化JSON对象为字节数组
-    // 发布消息到指定主题（control/设备名）
-    mqttClient->publish(QString("down"), doc.toJson());
+    // 检查设备是否在需要控制的列表中
+    if (!deviceKeyMap.contains(device)) {
+        return;  // 非目标设备不发送
+    }
+
+    // 构造JSON消息体（符合指定格式）
+    QJsonObject rootJson;
+    rootJson["type"] = 2;  // 指令类型：2-控制指令
+
+    QJsonObject dataJson;
+    dataJson["key"] = deviceKeyMap[device];  // 数据点唯一标识
+    dataJson["val"] = state ? "true" : "false";  // 开关状态（字符串类型）
+
+    rootJson["data"] = dataJson;
+
+    QJsonDocument doc(rootJson);
+    // 发布消息到指定主题
+    mqttClient->publish(QString("up"), doc.toJson());
 }
+
 
 // 发布传感器阈值到MQTT服务器：将传感器上下限阈值以JSON格式发送
 void MainWidget::publishSensorThreshold(const QString& sensor, float lower, float upper) {
@@ -302,7 +328,7 @@ void MainWidget::onAirConditionerClicked() {
     publishDeviceState("air_conditioner", airConditionerState);
 }
 
-// 空调温度调节：更新温度并发布到MQTT（注：原代码中发布被注释，可根据需求启用）
+// 空调温度调节：更新温度并发布到MQTT
 void MainWidget::onAirConditionerTempChanged(int value) {
     airConditionerTemp = value;  // 更新空调设定温度
     updateDeviceUI();            // 刷新UI显示
@@ -312,13 +338,17 @@ void MainWidget::onAirConditionerTempChanged(int value) {
         return;
     }
 
-    // 构造温度调节的JSON消息
-    QJsonObject json;
-    json["device"] = "air_conditioner";    // 设备名称
-    json["temperature"] = value;           // 设定温度
-    json["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);  // 时间戳
+    // 构造符合要求的控制指令JSON格式
+    QJsonObject rootJson;
+    rootJson["type"] = 2;  // 指令类型：2-控制指令
 
-    QJsonDocument doc(json);
-    // 发布消息到空调温度控制主题（当前注释，需要时可启用）
-    mqttClient->publish(QString("down"), doc.toJson());
+    QJsonObject dataJson;
+    dataJson["key"] = 105; // 空调温度对应的数据点key
+    dataJson["val"] = QString::number(value); // 温度值转为字符串类型
+
+    rootJson["data"] = dataJson;
+
+    QJsonDocument doc(rootJson);
+    // 发布到控制指令主题（与其他设备控制保持一致）
+    mqttClient->publish(QString("up"), doc.toJson());
 }

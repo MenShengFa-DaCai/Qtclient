@@ -63,6 +63,7 @@ private:
     QString topic;          // MQTT主题前缀
     QMqttClient* mqttClient=nullptr; // MQTT客户端对象
     bool isConnected;       // MQTT连接状态标志
+    QMqttSubscription* subscription = nullptr;
 
     /**
      * @brief 初始化MQTT客户端

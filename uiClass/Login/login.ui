@@ -22,6 +22,27 @@
         <property name="windowTitle">
             <string>用户登录</string>
         </property>
+        <property name="styleSheet">
+            <string notr="true">QWidget {
+                background-color: #2d3848;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #e0e0e0;
+                }
+
+                QLineEdit {
+                background-color: #3a4658;
+                border: 1px solid #4a5668;
+                border-radius: 6px;
+                padding: 5px;
+                font-size: 14px;
+                color: #e0e0e0;
+                selection-background-color: #3498db;
+                }
+
+                QLineEdit:focus {
+                border: 1px solid #3498db;
+                }</string>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout">
             <item>
                 <widget class="QLabel" name="labelTitle">
@@ -38,6 +59,16 @@
                             <bold>true</bold>
                         </font>
                     </property>
+                    <property name="styleSheet">
+                        <string notr="true">QLabel {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #ffffff;
+                            padding: 15px;
+                            background-color: #3498db;
+                            border-radius: 8px;
+                            }</string>
+                    </property>
                 </widget>
             </item>
             <item>
@@ -46,6 +77,12 @@
                         <widget class="QLabel" name="labelUsername">
                             <property name="text">
                                 <string>用户名:</string>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">QLabel {
+                                    color: #e0e0e0;
+                                    font-size: 14px;
+                                    }</string>
                             </property>
                         </widget>
                     </item>
@@ -57,10 +94,20 @@
                             <property name="text">
                                 <string>密码:</string>
                             </property>
+                            <property name="styleSheet">
+                                <string notr="true">QLabel {
+                                    color: #e0e0e0;
+                                    font-size: 14px;
+                                    }</string>
+                            </property>
                         </widget>
                     </item>
                     <item row="1" column="1">
-                        <widget class="QLineEdit" name="lineEditPassword"/>
+                        <widget class="QLineEdit" name="lineEditPassword">
+                            <property name="echoMode">
+                                <enum>QLineEdit::Password</enum>
+                            </property>
+                        </widget>
                     </item>
                 </layout>
             </item>
@@ -76,6 +123,25 @@
                             <bold>true</bold>
                         </font>
                     </property>
+                    <property name="styleSheet">
+                        <string notr="true">QPushButton {
+                            background-color: #3498db;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            font-size: 16px;
+                            font-weight: bold;
+                            padding: 10px;
+                            }
+
+                            QPushButton:hover {
+                            background-color: #2980b9;
+                            }
+
+                            QPushButton:pressed {
+                            background-color: #21618c;
+                            }</string>
+                    </property>
                 </widget>
             </item>
             <item>
@@ -88,6 +154,16 @@
                     </property>
                     <property name="frameShape">
                         <enum>QFrame::Box</enum>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">QLabel {
+                            font-size: 14px;
+                            color: #a0a0b0;
+                            padding: 5px;
+                            border: 1px solid #4a5668;
+                            border-radius: 6px;
+                            background-color: rgba(58, 70, 88, 0.5);
+                            }</string>
                     </property>
                 </widget>
             </item>

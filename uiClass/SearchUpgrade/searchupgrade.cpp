@@ -132,7 +132,7 @@ void SearchUpgrade::sendBroadcast() {
 void SearchUpgrade::readPendingDatagrams() {
     // 循环读取所有待处理的数据报
     while (udpSocket->hasPendingDatagrams()) {
-        QByteArray datagram;  // 存储接收的数据
+        QByteArray datagram="";  // 存储接收的数据
         datagram.resize(udpSocket->pendingDatagramSize());  // 调整数据大小为待接收数据报的大小
         QHostAddress sender;  // 存储发送者地址
         quint16 senderPort;  // 存储发送者端口
