@@ -66,35 +66,33 @@ void MainWidget::initMqttClient() {
 }
 
 // 处理收到的MQTT消息：解析JSON并更新传感器数据
-void MainWidget::onMqttMessageReceived(const QByteArray &message, const QMqttTopicName &topic) {
+void MainWidget::onMqttMessageReceived(const QByteArray& message, const QMqttTopicName& topic) {
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(message, &error);
 
-    if (error.error != QJsonParseError::NoError) {  // 解析失败则返回
+    if (error.error != QJsonParseError::NoError) {
+        // 解析失败则返回
         return;
     }
 
     QJsonObject rootObj = doc.object();
 
     // 只处理采集回复指令（type=1）且成功返回（result=0）的消息
-    if (rootObj["type"].toInt() != 1 || rootObj["result"].toInt() != 0) {
-        return;
-    }
+    if (rootObj["type"].toInt() == 1 && rootObj["result"].toInt() == 0) {
+        // 提取数据点数组
+        QJsonArray dataArray = rootObj["data"].toArray();
+        if (dataArray.isEmpty()) {
+            return;
+        }
 
-    // 提取数据点数组
-    QJsonArray dataArray = rootObj["data"].toArray();
-    if (dataArray.isEmpty()) {
-        return;
-    }
+        // 遍历所有数据点，根据key更新对应设备/传感器状态
+        for (const auto& val : dataArray) {
+            QJsonObject dataObj = val.toObject();
+            int key = dataObj["key"].toInt(); // 数据点key
+            QString valStr = dataObj["val"].toString(); // 数据点值（字符串）
 
-    // 遍历所有数据点，根据key更新对应设备/传感器状态
-    for (const auto &val : dataArray) {
-        QJsonObject dataObj = val.toObject();
-        int key = dataObj["key"].toInt();       // 数据点key
-        QString valStr = dataObj["val"].toString();  // 数据点值（字符串）
-
-        // 根据点表映射key与设备/传感器
-        switch (key) {
+            // 根据点表映射key与设备/传感器
+            switch (key) {
             // stm32模块 - 灯（key=301，type=1："1"=开，"0"=关）
             case 301:
                 ledState = (valStr == "true");
@@ -148,10 +146,10 @@ void MainWidget::onMqttMessageReceived(const QByteArray &message, const QMqttTop
             // 其他未用到的key可在此扩展
             default:
                 break;
+            }
         }
     }
-
-    updateDeviceUI();  // 刷新UI显示
+    updateDeviceUI(); // 刷新UI显示
 }
 
 // 处理MQTT连接状态变化：连接成功时订阅主题

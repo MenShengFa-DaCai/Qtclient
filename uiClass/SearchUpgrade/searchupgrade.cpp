@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QJsonDocument>  // 包含JSON文档类，用于JSON数据的序列化/反序列化
 #include <QJsonObject>  // 包含JSON对象类，用于处理JSON键值对
-#include "../LinkPush/linkpush.h"
+#include "LinkPush/linkpush.h"
 
 /**
  * @brief SearchUpgrade类的构造函数

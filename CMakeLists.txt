@@ -20,9 +20,9 @@ add_executable(Qtclient main.cpp
         uiClass/SearchUpgrade/searchupgrade.cpp
         uiClass/SearchUpgrade/searchupgrade.h
         uiClass/SearchUpgrade/searchupgrade.ui
-        uiClass/LinkPush/linkpush.cpp
-        uiClass/LinkPush/linkpush.h
-        uiClass/LinkPush/linkpush.ui
+        uiClass/SearchUpgrade/LinkPush/linkpush.cpp
+        uiClass/SearchUpgrade/LinkPush/linkpush.h
+        uiClass/SearchUpgrade/LinkPush/linkpush.ui
         uiClass/Login/login.cpp
         uiClass/Login/login.h
         uiClass/Login/login.ui
@@ -31,15 +31,15 @@ add_executable(Qtclient main.cpp
         uiClass/MainWidget/mainwidget.ui
         src/FileSenderThread.cpp
         inc/FileSenderThread.h
-        uiClass/WaterHeater/waterheater.cpp
-        uiClass/WaterHeater/waterheater.h
-        uiClass/WaterHeater/waterheater.ui
-        uiClass/ThermoHygroHistory/thermohygrohistory.cpp
-        uiClass/ThermoHygroHistory/thermohygrohistory.h
-        uiClass/ThermoHygroHistory/thermohygrohistory.ui
-        uiClass/Infrared/infrared.cpp
-        uiClass/Infrared/infrared.h
-        uiClass/Infrared/infrared.ui)
+        uiClass/MainWidget/WaterHeater/waterheater.cpp
+        uiClass/MainWidget/WaterHeater/waterheater.h
+        uiClass/MainWidget/WaterHeater/waterheater.ui
+        uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.cpp
+        uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.h
+        uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.ui
+        uiClass/MainWidget/Infrared/infrared.cpp
+        uiClass/MainWidget/Infrared/infrared.h
+        uiClass/MainWidget/Infrared/infrared.ui)
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui

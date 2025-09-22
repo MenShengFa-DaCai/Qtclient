@@ -5,7 +5,7 @@
 #include <QJsonDocument>
 #include <QFile>          // QFile需要的头文件
 #include <QCryptographicHash>  // 用于计算MD5
-#include "../Login/login.h"
+#include "../../Login/login.h"
 #include "FileSenderThread.h"
 
 
