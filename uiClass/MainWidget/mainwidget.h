@@ -33,11 +33,14 @@ private slots:
     void onTvClicked();          // 电视控制
     void onThermoHygroClicked(); // 温湿度传感器控制（阈值设置）
     void onInfraredClicked();    // 红外传感器控制（详情查看）
-    void onWaterHeaterClicked(); // 热水器控制（温度设置）
     void onAirConditionerClicked(); // 空调开关控制
+    void onRefreshClicked();     // 刷新按钮点击
+    void onModeClicked();        // 模式切换按钮点击
 
     // 空调温度调节槽函数：处理空调温度滑块变化
     void onAirConditionerTempChanged(int value);
+    //热水器温度调节
+    void onWaterHeaterChanged(int value);
 
 private:
     Ui::MainWidget* ui;          // UI界面指针，用于访问界面控件
@@ -65,7 +68,8 @@ private:
     float tempLowerThreshold;    // 温度下限阈值
     float humiUpperThreshold;    // 湿度上限阈值
     float humiLowerThreshold;    // 湿度下限阈值
-    float waterHeaterLowerThreshold; // 热水器温度下限阈值
+    int waterHeaterLowerThreshold; // 热水器温度下限阈值
+    int mod=2;                  //记录模式
 
     // 私有成员函数
     void initMqttClient();       // 初始化MQTT客户端（设置连接参数、连接信号槽）

@@ -14,7 +14,12 @@ find_package(Qt6 COMPONENTS
         Widgets
         Network
         Mqtt
+        PrintSupport  # 新增：添加 PrintSupport 模块
         REQUIRED)
+# 假设 qcustomplot.h 在 src 目录下
+set(QCUSTOMPLOT_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc/qcustomplot.h  # 路径需与你的项目匹配
+)
 
 add_executable(Qtclient main.cpp
         uiClass/SearchUpgrade/searchupgrade.cpp
@@ -31,22 +36,24 @@ add_executable(Qtclient main.cpp
         uiClass/MainWidget/mainwidget.ui
         src/FileSenderThread.cpp
         inc/FileSenderThread.h
-        uiClass/MainWidget/WaterHeater/waterheater.cpp
-        uiClass/MainWidget/WaterHeater/waterheater.h
-        uiClass/MainWidget/WaterHeater/waterheater.ui
         uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.cpp
         uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.h
         uiClass/MainWidget/ThermoHygroHistory/thermohygrohistory.ui
         uiClass/MainWidget/Infrared/infrared.cpp
         uiClass/MainWidget/Infrared/infrared.h
-        uiClass/MainWidget/Infrared/infrared.ui)
+        uiClass/MainWidget/Infrared/infrared.ui
+        src/qcustomplot.cpp
+        inc/qcustomplot.h
+        ${QCUSTOMPLOT_MOC_SOURCES}  )
 target_link_libraries(Qtclient
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Network
         Qt::Mqtt
+        Qt6::PrintSupport  # 新增：链接 PrintSupport 库
 )
+
 
 include_directories(inc)
 

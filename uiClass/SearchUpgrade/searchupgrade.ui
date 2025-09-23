@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>SearchUpgrade</class>
-    <widget class="QWidget" name="SearchUpgrade">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>800</width>
-                <height>600</height>
-            </rect>
-        </property>
-        <property name="minimumSize">
-            <size>
-                <width>800</width>
-                <height>600</height>
-            </size>
-        </property>
-        <property name="windowTitle">
-            <string>固件升级搜索</string>
-        </property>
-        <property name="styleSheet">
-            <string notr="true">QWidget {
+ <class>SearchUpgrade</class>
+ <widget class="QWidget" name="SearchUpgrade">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>固件升级搜索</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
                 background-color: #2d3848;
                 font-family: 'Segoe UI', Arial, sans-serif;
                 color: #e0e0e0;
@@ -57,12 +57,12 @@
                 QLabel {
                 color: #e0e0e0;
                 }</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-                <widget class="QLabel" name="labelTitle">
-                    <property name="styleSheet">
-                        <string notr="true">QLabel {
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="labelTitle">
+     <property name="styleSheet">
+      <string notr="true">QLabel {
                             font-size: 24px;
                             font-weight: bold;
                             color: #ffffff;
@@ -70,33 +70,36 @@
                             background-color: #3498db;
                             border-radius: 8px;
                             }</string>
-                    </property>
-                    <property name="text">
-                        <string>网关设备列表</string>
-                    </property>
-                    <property name="alignment">
-                        <set>Qt::AlignmentFlag::AlignCenter</set>
-                    </property>
-                </widget>
-            </item>
-            <item>
-                <widget class="QLabel" name="labelStatus">
-                    <property name="styleSheet">
-                        <string notr="true">QLabel {
+     </property>
+     <property name="text">
+      <string>网关设备列表</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelStatus">
+     <property name="styleSheet">
+      <string notr="true">QLabel {
                             font-size: 14px;
                             color: #a0a0b0;
                             padding: 5px;
                             }</string>
-                    </property>
-                    <property name="text">
-                        <string>正在搜索设备...</string>
-                    </property>
-                </widget>
-            </item>
-            <item>
-                <widget class="QListWidget" name="listWidgetClients">
-                    <property name="styleSheet">
-                        <string notr="true">QListWidget {
+     </property>
+     <property name="text">
+      <string>正在搜索设备...</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listWidgetClients">
+     <property name="cursor" stdset="0">
+      <cursorShape>ArrowCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QListWidget {
                             background-color: #3a4658;
                             border: 1px solid #4a5668;
                             border-radius: 6px;
@@ -123,19 +126,22 @@
                             border-radius: 4px;
                             color: #ffffff;
                             }</string>
-                    </property>
-                </widget>
-            </item>
-            <item>
-                <widget class="QPushButton" name="pushButtonClose">
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>40</height>
-                        </size>
-                    </property>
-                    <property name="styleSheet">
-                        <string notr="true">QPushButton {
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonClose">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
                             background-color: #e74c3c;
                             color: white;
                             border: none;
@@ -152,31 +158,31 @@
                             QPushButton:pressed {
                             background-color: #a93226;
                             }</string>
-                    </property>
-                    <property name="text">
-                        <string>关闭</string>
-                    </property>
-                </widget>
-            </item>
-        </layout>
+     </property>
+     <property name="text">
+      <string>关闭</string>
+     </property>
     </widget>
-    <resources/>
-    <connections>
-        <connection>
-            <sender>pushButtonClose</sender>
-            <signal>clicked()</signal>
-            <receiver>SearchUpgrade</receiver>
-            <slot>close()</slot>
-            <hints>
-                <hint type="sourcelabel">
-                    <x>20</x>
-                    <y>20</y>
-                </hint>
-                <hint type="destinationlabel">
-                    <x>20</x>
-                    <y>20</y>
-                </hint>
-            </hints>
-        </connection>
-    </connections>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButtonClose</sender>
+   <signal>clicked()</signal>
+   <receiver>SearchUpgrade</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

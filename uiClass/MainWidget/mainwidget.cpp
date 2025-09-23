@@ -6,6 +6,8 @@
 #include <utility>
 #include <QJsonArray>  // 添加QJsonArray头文件
 
+#include "ThermoHygroHistory/thermohygrohistory.h"
+
 // 构造函数：初始化成员变量、UI和MQTT客户端
 MainWidget::MainWidget(QWidget* parent,QString ip,QString topic) :
     QMainWindow(parent),
@@ -34,10 +36,13 @@ MainWidget::MainWidget(QWidget* parent,QString ip,QString topic) :
     connect(ui->btnTv, &QPushButton::clicked, this, &MainWidget::onTvClicked);
     connect(ui->btnThermoHygro, &QPushButton::clicked, this, &MainWidget::onThermoHygroClicked);
     connect(ui->btnInfrared, &QPushButton::clicked, this, &MainWidget::onInfraredClicked);
-    connect(ui->btnWaterHeater, &QPushButton::clicked, this, &MainWidget::onWaterHeaterClicked);
     connect(ui->btnAirConditioner, &QPushButton::clicked, this, &MainWidget::onAirConditionerClicked);
     // 空调温度滑块变化绑定到温度调节函数
     connect(ui->sliderAirConditionerTemp, &QSlider::valueChanged, this, &MainWidget::onAirConditionerTempChanged);
+    //热水器
+    connect(ui->WaterHeatersetbar,&QSlider::valueChanged,this,&MainWidget::onWaterHeaterChanged);
+    connect(ui->btnRefresh, &QPushButton::clicked, this, &MainWidget::onRefreshClicked);
+    connect(ui->btnMode, &QPushButton::clicked, this, &MainWidget::onModeClicked);
 
     updateDeviceUI();  // 初始化UI显示（根据默认状态刷新控件）
     initMqttClient();  // 初始化MQTT客户端
@@ -166,37 +171,37 @@ void MainWidget::updateDeviceUI() {
     ui->btnLed->setText(ledState ? "开" : "关");
     ui->btnLed->setStyleSheet(ledState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :  // 开：绿色背景
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }"); // 关：默认样式
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }"); // 关：默认样式
 
     // 更新蜂鸣器按钮显示
     ui->btnBuzzer->setText(buzzerState ? "开" : "关");
     ui->btnBuzzer->setStyleSheet(buzzerState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }");
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }");
 
     // 更新风扇按钮显示
     ui->btnFan->setText(fanState ? "开" : "关");
     ui->btnFan->setStyleSheet(fanState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }");
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }");
 
     // 更新门锁按钮显示
     ui->btnDoorLock->setText(doorLockState ? "开" : "关");
     ui->btnDoorLock->setStyleSheet(doorLockState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }");
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }");
 
     // 更新电视按钮显示
     ui->btnTv->setText(tvState ? "开" : "关");
     ui->btnTv->setStyleSheet(tvState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }");
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }");
 
     // 更新空调按钮显示
     ui->btnAirConditioner->setText(airConditionerState ? "开" : "关");
     ui->btnAirConditioner->setStyleSheet(airConditionerState ?
         "QPushButton { background-color: #4CAF50; color: white; }" :
-        "QPushButton { background-color: #f8f9fa; color: #3c4043; }");
+        "QPushButton { background-color: #e74c3c; color: #3c4043; }");
 
     // 更新温度显示标签
     ui->lblTemperature->setText(QString("温度: %1 °C").arg(temperature, 0, 'f', 2));
@@ -210,6 +215,8 @@ void MainWidget::updateDeviceUI() {
 
     // 更新空调温度显示标签
     ui->lblAirConditionerTemp->setText(QString("温度: %1°C").arg(airConditionerTemp));
+    //热水器温度标签
+    ui->waterHeartlab->setText(QString("预设温度：1%°C").arg(waterHeaterLowerThreshold));
 }
 
 // 发布设备状态到MQTT服务器：将设备开关状态以JSON格式发送
@@ -306,7 +313,10 @@ void MainWidget::onTvClicked() {
 
 // 温湿度计控制：弹出阈值设置提示（待实现）
 void MainWidget::onThermoHygroClicked() {
-    QMessageBox::information(this, "温湿度计", "阈值设置功能待实现");
+    // 创建并显示温湿度历史记录窗口
+    auto* historyDialog = new ThermoHygroHistory(mqttClient, this);
+    historyDialog->setAttribute(Qt::WA_DeleteOnClose); // 关闭时自动删除
+    historyDialog->exec(); // 模态显示
 }
 
 // 红外传感器控制：弹出详情提示（待实现）
@@ -314,10 +324,6 @@ void MainWidget::onInfraredClicked() {
     QMessageBox::information(this, "人体红外传感器", "详情功能待实现");
 }
 
-// 热水器控制：弹出温度设置提示（待实现）
-void MainWidget::onWaterHeaterClicked() {
-    QMessageBox::information(this, "热水器", "温度设置功能待实现");
-}
 
 // 空调开关控制：切换状态并发布到MQTT
 void MainWidget::onAirConditionerClicked() {
@@ -348,5 +354,59 @@ void MainWidget::onAirConditionerTempChanged(int value) {
 
     QJsonDocument doc(rootJson);
     // 发布到控制指令主题（与其他设备控制保持一致）
+    mqttClient->publish(QString("up"), doc.toJson());
+}
+//热水器
+void MainWidget::onWaterHeaterChanged(int value) {
+    waterHeaterLowerThreshold = value;
+    updateDeviceUI();
+    if (!mqttClient || mqttClient->state() != QMqttClient::Connected) {
+        return;
+    }
+    QJsonObject rootJson;
+    rootJson["type"] = 2;
+    QJsonObject dataJson;
+    dataJson["key"] = 102;
+    dataJson["val"] = QString::number(value);
+    rootJson["data"] = dataJson;
+    QJsonDocument doc(rootJson);
+    mqttClient->publish(QString("up"), doc.toJson());
+}
+void MainWidget::onRefreshClicked() {
+    if (!mqttClient||mqttClient->state() != QMqttClient::Connected) {
+        return;
+    }
+    QJsonObject rootJson;
+    rootJson["type"] = 1;
+    rootJson["limit"] = "all";
+    QJsonDocument doc(rootJson);
+    mqttClient->publish(QString("up"), doc.toJson());
+}
+void MainWidget::onModeClicked() {
+    if (!mqttClient||mqttClient->state() != QMqttClient::Connected) {
+        return;
+    }
+    mod++;
+    mod%=3;
+    switch (mod) {
+        case 0:
+        ui->btnMode->setText("手动上报");
+        break;
+        case 1:
+        ui->btnMode->setText("变化上报");
+        break;
+        case 2:
+        ui->btnMode->setText("周期上报");
+        break;
+    default:
+        break;
+    }
+    QJsonObject rootJson;
+    rootJson["type"] = 3;
+    QJsonObject dataJson;
+    dataJson["type"] = mod;
+    dataJson["period"] = 5;
+    rootJson["data"] = dataJson;
+    QJsonDocument doc(rootJson);
     mqttClient->publish(QString("up"), doc.toJson());
 }
