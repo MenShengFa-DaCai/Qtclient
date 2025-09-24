@@ -6,6 +6,7 @@
 #include <utility>
 #include <QJsonArray>  // 添加QJsonArray头文件
 
+#include "Infrared/infrared.h"
 #include "ThermoHygroHistory/thermohygrohistory.h"
 
 // 构造函数：初始化成员变量、UI和MQTT客户端
@@ -146,7 +147,7 @@ void MainWidget::onMqttMessageReceived(const QByteArray& message, const QMqttTop
                 break;
             // modbus模块 - 空调温度（key=105，type=3）
             case 105:
-                airConditionerTemp = valStr.toInt();
+                airConditionerTemp = valStr.toDouble();
                 break;
             // 其他未用到的key可在此扩展
             default:
@@ -216,7 +217,7 @@ void MainWidget::updateDeviceUI() {
     // 更新空调温度显示标签
     ui->lblAirConditionerTemp->setText(QString("温度: %1°C").arg(airConditionerTemp));
     //热水器温度标签
-    ui->waterHeartlab->setText(QString("预设温度：1%°C").arg(waterHeaterLowerThreshold));
+    ui->waterHeartlab->setText(QString("预设温度：%1°C").arg(waterHeaterLowerThreshold));
 }
 
 // 发布设备状态到MQTT服务器：将设备开关状态以JSON格式发送
@@ -321,7 +322,10 @@ void MainWidget::onThermoHygroClicked() {
 
 // 红外传感器控制：弹出详情提示（待实现）
 void MainWidget::onInfraredClicked() {
-    QMessageBox::information(this, "人体红外传感器", "详情功能待实现");
+    // 创建并显示红外监控窗口
+    auto* infraredDialog = new Infrared(this);
+    infraredDialog->setAttribute(Qt::WA_DeleteOnClose); // 关闭时自动删除
+    infraredDialog->exec(); // 模态显示
 }
 
 

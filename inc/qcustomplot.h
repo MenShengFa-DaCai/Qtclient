@@ -1,26 +1,22 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011-2022 Emanuel Eichhammer                            **
+**  QCustomPlot，一个易于使用的现代 Qt 绘图小部件                                **
+**  版权所有 （C） 2011-2022伊曼纽尔·艾希哈默                                   **
 **                                                                        **
-**  This program is free software: you can redistribute it and/or modify  **
-**  it under the terms of the GNU General Public License as published by  **
-**  the Free Software Foundation, either version 3 of the License, or     **
-**  (at your option) any later version.                                   **
+**  该程序是免费软件：您可以重新分发和/或修改它 它根据 GNU 通用公共许可证的条款，由自由    **
+**  软件基金会，许可证的第 3 版，或（由您选择）任何更高版本。                         **
 **                                                                        **
-**  This program is distributed in the hope that it will be useful,       **
-**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
-**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         **
-**  GNU General Public License for more details.                          **
+**  分发这个程序是希望它有用， 但没有任何保证;甚至没有默示的保证适销性或特定用途的适用性。  **
+**  请参阅GNU 通用公共许可证了解更多详情。                                       **
 **                                                                        **
-**  You should have received a copy of the GNU General Public License     **
-**  along with this program.  If not, see http://www.gnu.org/licenses/.   **
+**  您应该已经收到 GNU 通用公共许可证的副本与此程序一起。如果没有，请参阅               **
+**  http://www.gnu.org/licenses/。                                         **
 **                                                                        **
 ****************************************************************************
-**           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: https://www.qcustomplot.com/                         **
-**             Date: 06.11.22                                             **
-**          Version: 2.1.1                                                **
+**           作者：伊曼纽尔·艾希哈默                                           **
+**  网站/联系方式：https://www.qcustomplot.com/                              **
+**            日期：11/06/22                                               **
+**          版本： 2.1.1                                                   **
 ****************************************************************************/
 
 #ifndef QCUSTOMPLOT_H

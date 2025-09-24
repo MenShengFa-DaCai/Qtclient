@@ -6,26 +6,202 @@
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>600</width>
-                <height>400</height>
+                <width>900</width>
+                <height>700</height>
             </rect>
         </property>
         <property name="windowTitle">
-            <string>红外检测记录</string>
+            <string>红外检测监控</string>
+        </property>
+        <property name="styleSheet">
+            <string notr="true">
+                QDialog {
+                background-color: #2d3848;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #e0e0e0;
+                }
+                QLabel {
+                color: #e0e0e0;
+                font-size: 14px;
+                }
+                QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                }
+                QPushButton:hover {
+                background-color: #2980b9;
+                }
+                QPushButton:pressed {
+                background-color: #21618c;
+                }
+                QPushButton:disabled {
+                background-color: #7f8c8d;
+                color: #bdc3c7;
+                }
+                QTableWidget {
+                background-color: #3a4658;
+                border: 1px solid #4a5668;
+                gridline-color: #4a5668;
+                color: #e0e0e0;
+                font-size: 12px;
+                }
+                QTableWidget::item {
+                padding: 4px;
+                border-bottom: 1px solid #4a5668;
+                }
+                QTableWidget::item:selected {
+                background-color: #3498db;
+                }
+                QHeaderView::section {
+                background-color: #34495e;
+                color: #ecf0f1;
+                padding: 6px;
+                border: none;
+                font-weight: bold;
+                }
+            </string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-                <widget class="QLabel" name="label">
+                <widget class="QLabel" name="titleLabel">
                     <property name="text">
-                        <string>红外检测历史记录</string>
+                        <string>红外检测实时监控</string>
                     </property>
                     <property name="alignment">
                         <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">
+                            font-size: 18px;
+                            font-weight: bold;
+                            color: #3498db;
+                            padding: 10px;
+                        </string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="videoLayout">
+                    <item>
+                        <widget class="QLabel" name="videoLabel">
+                            <property name="minimumSize">
+                                <size>
+                                    <width>640</width>
+                                    <height>480</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>640</width>
+                                    <height>480</height>
+                                </size>
+                            </property>
+                            <property name="frameShape">
+                                <enum>QFrame::Box</enum>
+                            </property>
+                            <property name="frameShadow">
+                                <enum>QFrame::Sunken</enum>
+                            </property>
+                            <property name="text">
+                                <string>视频流显示区域</string>
+                            </property>
+                            <property name="alignment">
+                                <set>Qt::AlignCenter</set>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">
+                                    background-color: #1c1c1c;
+                                    border: 2px solid #4a5668;
+                                    color: #7f8c8d;
+                                    font-size: 16px;
+                                </string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <layout class="QVBoxLayout" name="infoLayout">
+                            <item>
+                                <widget class="QLabel" name="statusLabel">
+                                    <property name="text">
+                                        <string>状态: 未连接</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QLabel" name="frameRateLabel">
+                                    <property name="text">
+                                        <string>帧率: 0 fps</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QLabel" name="portLabel">
+                                    <property name="text">
+                                        <string>UDP端口: 12345</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <spacer name="verticalSpacer">
+                                    <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                        <size>
+                                            <width>20</width>
+                                            <height>40</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </item>
+                            <item>
+                                <widget class="QPushButton" name="btnStartStream">
+                                    <property name="text">
+                                        <string>开始接收</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QPushButton" name="btnStopStream">
+                                    <property name="text">
+                                        <string>停止接收</string>
+                                    </property>
+                                    <property name="enabled">
+                                        <bool>false</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="QLabel" name="historyLabel">
+                    <property name="text">
+                        <string>检测历史记录:</string>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #e67e22;
+                            padding: 5px;
+                        </string>
                     </property>
                 </widget>
             </item>
             <item>
                 <widget class="QTableWidget" name="tableWidget">
+                    <property name="minimumSize">
+                        <size>
+                            <width>0</width>
+                            <height>150</height>
+                        </size>
+                    </property>
                     <property name="editTriggers">
                         <set>QAbstractItemView::NoEditTriggers</set>
                     </property>
@@ -38,11 +214,11 @@
                 </widget>
             </item>
             <item>
-                <layout class="QHBoxLayout" name="horizontalLayout">
+                <layout class="QHBoxLayout" name="buttonLayout">
                     <item>
                         <widget class="QPushButton" name="btnClearAll">
                             <property name="text">
-                                <string>清空所有记录</string>
+                                <string>清空记录</string>
                             </property>
                         </widget>
                     </item>
